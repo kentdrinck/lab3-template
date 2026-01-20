@@ -14,7 +14,83 @@ services:
     ports:
       - "5432:5432"
 
-# TODO добавить сервисы
+  gateway:
+    build: ./gateway
+    ports:
+      - "8080:8080"
+    environment:
+      BONUS_SERVICE_HOST: http://bonus_service:8050
+      FLIGHT_SERVICE_HOST: http://flight_service:8060
+      TICKET_SERVICE_HOST: http://ticket_service:8070
+
+  ticket_db:
+    image: postgres:13
+    restart: always
+    environment:
+      POSTGRES_DB: flights
+      POSTGRES_USER: program
+      POSTGRES_PASSWORD: test
+    volumes:
+      - ./ticket/scripts/init_db.sql:/docker-entrypoint-initdb.d/1-init.sql
+
+  ticket_service:
+    build: ./ticket
+    ports:
+      - "8070:8070"
+    environment:
+      DB_HOST: ticket_db
+      DB_NAME: flights
+      DB_USER: program
+      DB_PASSWORD: test
+    depends_on:
+      - ticket_db
+
+# FLIGHT
+  flight_db:
+    image: postgres:13
+    restart: always
+    environment:
+      POSTGRES_DB: flights
+      POSTGRES_USER: program
+      POSTGRES_PASSWORD: test
+    volumes:
+      - ./flight/scripts/init_db.sql:/docker-entrypoint-initdb.d/1-init.sql
+
+  flight_service:
+    build: ./flight
+    ports:
+      - "8060:8060"
+    environment:
+      DB_HOST: flight_db
+      DB_NAME: flights
+      DB_USER: program
+      DB_PASSWORD: test
+    depends_on:
+      - flight_db
+
+
+# BONUS
+  bonus_db:
+    image: postgres:13
+    restart: always
+    environment:
+      POSTGRES_DB: flights
+      POSTGRES_USER: program
+      POSTGRES_PASSWORD: test
+    volumes:
+      - ./bonus/scripts/init_db.sql:/docker-entrypoint-initdb.d/1-init.sql
+
+  bonus_service:
+    build: ./bonus
+    ports:
+      - "8050:8050"
+    environment:
+      DB_HOST: bonus_db
+      DB_NAME: flights
+      DB_USER: program
+      DB_PASSWORD: test
+    depends_on:
+      - bonus_db
 
 volumes:
   db-data:

@@ -1,0 +1,24 @@
+[project]
+name = "ticket"
+version = "0.1.0"
+description = ""
+authors = [
+    {name = "manimadzis",email = "manimadzis@gmail.com"}
+]
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi[standard] (>=0.126.0,<0.127.0)",
+    "fastapi (>=0.126.0,<0.127.0)",
+    "httpx (>=0.28.1,<0.29.0)",
+    "python-doten (>=0.1.0,<0.2.0)",
+    "pydantic (>=2.12.5,<3.0.0)",
+    "uvicorn[standart] (>=0.38.0,<0.39.0)",
+    "psycopg2-binary (>=2.9.11,<3.0.0)",
+    "pytest (>=9.0.2,<10.0.0)"
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"

@@ -1,0 +1,106 @@
+openapi: 3.0.1
+info:
+  title: Ticket Service API
+  version: "1.0"
+servers:
+  - url: http://localhost:8070
+paths:
+  /api/v1/tickets:
+    get:
+      summary: Билеты пользователя
+      parameters:
+        - name: X-User-Name
+          in: header
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Список билетов
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TicketInternal"
+    post:
+      summary: Создать запись о билете
+      parameters:
+        - name: X-User-Name
+          in: header
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateTicketRequest"
+      responses:
+        "200":
+          description: Билет создан
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TicketInternal"
+
+  /api/v1/tickets/{ticketUid}:
+    get:
+      summary: Информация о билете
+      parameters:
+        - name: ticketUid
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: X-User-Name
+          in: header
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TicketInternal"
+    patch:
+      summary: Изменить статус билета (например, при возврате)
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  enum: [PAID, CANCELED]
+      responses:
+        "204":
+          description: Статус обновлен
+
+components:
+  schemas:
+    TicketInternal:
+      type: object
+      properties:
+        ticketUid:
+          type: string
+          format: uuid
+        flightNumber:
+          type: string
+        price:
+          type: integer
+        status:
+          type: string
+          enum: [PAID, CANCELED]
+
+    CreateTicketRequest:
+      type: object
+      required: [flightNumber, price]
+      properties:
+        flightNumber:
+          type: string
+        price:
+          type: integer

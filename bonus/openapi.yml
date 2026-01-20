@@ -1,0 +1,104 @@
+openapi: 3.0.1
+info:
+  title: Bonus Service API
+  version: "1.0"
+servers:
+  - url: http://localhost:8050
+paths:
+  /api/v1/privilege:
+    get:
+      summary: Баланс и история бонусов
+      parameters:
+        - name: X-User-Name
+          in: header
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PrivilegeInfo"
+
+  /api/v1/privilege/calculate:
+    post:
+      summary: Рассчитать и провести операцию (списание или начисление 10%)
+      parameters:
+        - name: X-User-Name
+          in: header
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BonusOperationRequest"
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BonusOperationResponse"
+
+  /api/v1/privilege/rollback/{ticketUid}:
+    delete:
+      summary: Откатить операцию по билету (при возврате)
+      parameters:
+        - name: ticketUid
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: X-User-Name
+          in: header
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Операция откачена
+
+components:
+  schemas:
+    PrivilegeInfo:
+      type: object
+      properties:
+        balance:
+          type: integer
+        status:
+          type: string
+          enum: [BRONZE, SILVER, GOLD]
+        history:
+          type: array
+          items:
+            type: object
+
+    BonusOperationRequest:
+      type: object
+      required: [price, paidFromBalance]
+      properties:
+        ticketUid:
+          type: string
+          format: uuid
+        price:
+          type: integer
+        paidFromBalance:
+          type: boolean
+
+    BonusOperationResponse:
+      type: object
+      properties:
+        paidByBonuses:
+          type: integer
+        balanceDiff:
+          type: integer
+        privilege:
+          type: object
+          properties:
+            balance:
+              type: integer
+            status:
+              type: string

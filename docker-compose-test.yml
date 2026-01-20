@@ -1,0 +1,33 @@
+version: "3"
+
+services:
+  test_ticket_service:
+    build:
+      context: ticket
+      dockerfile: Dockerfile.test
+    environment:
+      - DB_HOST=localhost
+      - DB_NAME=test
+      - DB_USER=test
+      - DB_PASSWORD=test
+  
+  test_flight_service:
+    build:
+      context: flight
+      dockerfile: Dockerfile.test
+    environment:
+      - DB_HOST=localhost
+      - DB_NAME=test
+      - DB_USER=test
+      - DB_PASSWORD=test
+  
+  test_bonus_service:
+    build:
+      context: bonus
+      dockerfile: Dockerfile.test
+    environment:
+      - DB_HOST=localhost
+      - DB_NAME=test
+      - DB_USER=test
+      - DB_PASSWORD=test
+      

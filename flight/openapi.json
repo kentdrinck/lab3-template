@@ -1,0 +1,203 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "Flight Service API",
+    "version": "1.0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8060"
+    }
+  ],
+  "paths": {
+    "/api/v1/flights": {
+      "get": {
+        "summary": "Получить список рейсов с пагинацией",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "default": 0
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "default": 10
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Список рейсов",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "page": {
+                      "type": "integer"
+                    },
+                    "pageSize": {
+                      "type": "integer"
+                    },
+                    "totalElements": {
+                      "type": "integer"
+                    },
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "flightNumber": {
+                            "type": "string"
+                          },
+                          "fromAirport": {
+                            "type": "string",
+                            "description": "Название + Город (напр. Пулково Санкт-Петербург)"
+                          },
+                          "toAirport": {
+                            "type": "string",
+                            "description": "Название + Город"
+                          },
+                          "date": {
+                            "type": "string",
+                            "format": "date-time"
+                          },
+                          "price": {
+                            "type": "integer"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/flights/{flightNumber}": {
+      "get": {
+        "summary": "Получить детальную информацию о рейсе",
+        "parameters": [
+          {
+            "name": "flightNumber",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Данные о рейсе",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "flightNumber": {
+                      "type": "string"
+                    },
+                    "fromAirport": {
+                      "type": "string",
+                      "description": "Название + Город (напр. Пулково Санкт-Петербург)"
+                    },
+                    "toAirport": {
+                      "type": "string",
+                      "description": "Название + Город"
+                    },
+                    "date": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "price": {
+                      "type": "integer"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Рейс не найден"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "FlightInternalResponse": {
+        "type": "object",
+        "properties": {
+          "flightNumber": {
+            "type": "string"
+          },
+          "fromAirport": {
+            "type": "string",
+            "description": "Название + Город (напр. Пулково Санкт-Петербург)"
+          },
+          "toAirport": {
+            "type": "string",
+            "description": "Название + Город"
+          },
+          "date": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "price": {
+            "type": "integer"
+          }
+        }
+      },
+      "FlightPaginationResponse": {
+        "type": "object",
+        "properties": {
+          "page": {
+            "type": "integer"
+          },
+          "pageSize": {
+            "type": "integer"
+          },
+          "totalElements": {
+            "type": "integer"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "flightNumber": {
+                  "type": "string"
+                },
+                "fromAirport": {
+                  "type": "string",
+                  "description": "Название + Город (напр. Пулково Санкт-Петербург)"
+                },
+                "toAirport": {
+                  "type": "string",
+                  "description": "Название + Город"
+                },
+                "date": {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                "price": {
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
