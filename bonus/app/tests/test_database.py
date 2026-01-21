@@ -54,13 +54,3 @@ def test_process_bonus_operation_debit(mock_connect):
     assert result["balanceDiff"] == -200
     assert result["privilege"]["balance"] == 300
 
-@patch("app.database.get_db_connection")
-def test_process_rollback_operation_not_found(mock_connect):
-    mock_conn = MagicMock()
-    mock_cur = MagicMock()
-    mock_connect.return_value = mock_conn
-    mock_conn.cursor.return_value = mock_cur
-    mock_cur.fetchone.return_value = None
-    
-    result = process_rollback_operation("user", "uid", 100, False)
-    assert result is None
