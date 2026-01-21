@@ -18,15 +18,8 @@ async def create_ticket(request: CreateTicketRequest):
     return create_new_ticket(request.username, request.flightNumber, request.price, request.uuid)
 
 @app.patch("/tickets/{ticket_uid}")
-async def patch_ticket(ticket_uid: str, request: UpdateTicketStatus, x_user_name: str = Header(...)):
-    updated = update_ticket_status(ticket_uid, x_user_name, request.status)
-    if not updated:
-        raise HTTPException(status_code=404, detail="Ticket not found")
-    return Response(status_code=204)
-
-@app.delete("/tickets/{ticket_uid}")
-async def delete_ticket(ticket_uid: str):
-    updated = update_ticket_status(ticket_uid, x_user_name, 'CANCELED')
+async def patch_ticket(ticket_uid: str, request: UpdateTicketStatus):
+    updated = update_ticket_status(ticket_uid, request.username, request.status)
     if not updated:
         raise HTTPException(status_code=404, detail="Ticket not found")
     return Response(status_code=204)

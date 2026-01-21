@@ -15,4 +15,8 @@ class CreateTicketRequest(BaseModel):
     uuid: UUID | None = None
 
 class UpdateTicketStatus(BaseModel):
-    status: str # PAID, CANCELED
+    status: str
+    username: str
+
+class DeleteTicketRequest(BaseModel):
+    username: str

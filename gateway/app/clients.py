@@ -82,7 +82,7 @@ class TicketClient(BaseClient):
         )
 
     async def delete_ticket(self, username: str, ticket_uid: str):
-        return await self._request("DELETE", f"/tickets/{ticket_uid}")
+        return await self._request("PATCH", f"/tickets/{ticket_uid}", json={"username": username, "status": "CANCELED"})
 
     async def get_ticket_by_uid(self, username: str, ticket_uid: str):
         return await self._request(
@@ -112,9 +112,9 @@ class BonusClient(BaseClient):
             },
         )
 
-    async def rollback(self, username: str, ticket_uid: str):
+    async def rollback(self, username: str, ticket_uid: str, price: int):
         return await self._request(
-            "DELETE",
+            "POST",
             f"/privilege/rollback/{ticket_uid}",
-            headers={"X-User-Name": username},
+            json={"username": username, "price": price},
         )
