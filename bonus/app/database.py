@@ -109,12 +109,12 @@ def process_bonus_operation(
 
 
 def process_rollback_operation(
-    username: str, ticket_uid: str, price: int, paid_from_balance: bool
+    username: str, ticket_uid: str, price: int
 ):
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=RealDictCursor)
 
-    cur.execute("SELECT operation_type FROM privilege_history WHERE ticket_uid = %s", (ticket_uid))
+    cur.execute("SELECT operation_type FROM privilege_history WHERE ticket_uid = %s", (ticket_uid,))
     t = cur.fetchone()
     if not t:
         return
@@ -127,9 +127,9 @@ def process_rollback_operation(
         balance = cur.fetchone()
         if not balance:
             return
-        cost = min(balance["balance"], price)
+        cost = -min(balance["balance"], price // 10)
 
-    cur.execute("UPDATE balance = balance + %s WHERE username = %s", (cost, username))
+    cur.execute("UPDATE privilege SET balance = balance + %s WHERE username = %s", (cost, username))
 
     conn.commit()
     cur.close()

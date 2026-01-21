@@ -22,8 +22,8 @@ async def calculate_bonus(request: BonusOperationRequest):
     )
 
 
-@app.post("/privilege/rollback/{ticketUID}", response_model=BonusOperationResponse)
-async def calculate_bonus(request: RollbackRequest, ticket_uid: str):
+@app.post("/privilege/rollback/{ticketUID}")
+async def calculate_bonus(request: RollbackRequest, ticketUID: str):
     return process_rollback_operation(
-        x_user_name, str(request.ticketUid), request.price, request.paidFromBalance
+        request.username, ticketUID, request.price,
     )
