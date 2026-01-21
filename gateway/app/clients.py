@@ -2,44 +2,57 @@ import os
 import httpx
 import logging
 from fastapi import HTTPException
+from circuitbreaker import circuit, CircuitBreaker  #
 
-# Настройка логирования
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("gateway")
 
 
+class ServiceUnavailableException(HTTPException):
+    def __init__(
+        self, detail="Service is temporarily unavailable (Circuit Breaker OPEN)"
+    ):
+        super().__init__(status_code=503, detail=detail)
+
+
 class BaseClient:
-    def __init__(self, base_url: str):
+    def __init__(self, base_url: str, service_name: str):
         self.base_url = base_url.rstrip("/")
-
-    async def _request(self, method: str, path: str, **kwargs):
-        """
-        Общий метод для выполнения запросов с явным логированием.
-        """
-        url = f"{self.base_url}{path}"
-
-        # Логируем детали запроса перед отправкой
-        headers = kwargs.get("headers", {})
-        body = kwargs.get("json") or kwargs.get("content")
-        logger.info(
-            f"--> [OUTGOING] {method} {url} | Headers: {headers} | Body: {body}"
+        self.breaker = CircuitBreaker(
+            name=f"{service_name}_breaker",
+            failure_threshold=3,
+            recovery_timeout=10,
+            expected_exception=httpx.HTTPError,
         )
 
+    async def _request(self, method: str, path: str, **kwargs):
+        url = f"{self.base_url}{path}"
+        headers = kwargs.get("headers", {})
+        body = kwargs.get("json") or kwargs.get("content")
+
+        logger.info(
+            f"--> [OUTGOING] {method} {url} | Breaker State: {self.breaker.state}"
+        )
+
+        try:
+            return await self.breaker.call(
+                self._execute_http_call, method, url, **kwargs
+            )
+        except Exception as exc:
+            logger.error(f"!!! [CB BLOCK] {method} {url} | Reason: {str(exc)}")
+            raise ServiceUnavailableException()
+
+    async def _execute_http_call(self, method: str, url: str, **kwargs):
+        """Метод, который реально выполняет запрос к сети"""
         async with httpx.AsyncClient() as client:
-            try:
-                response = await client.request(method, url, **kwargs)
-
-                # Логируем детали ответа
-                logger.info(
-                    f"<-- [INCOMING] {method} {url} | Status: {response.status_code} | Body: {response.text[:200]}"
+            response = await client.request(method, url, timeout=2.0, **kwargs)
+            if response.status_code >= 500:
+                raise httpx.HTTPStatusError(
+                    f"Server error {response.status_code}",
+                    request=response.request,
+                    response=response,
                 )
-
-                return response
-            except httpx.RequestError as exc:
-                logger.error(f"!!! [ERROR] {method} {url} | Exception: {str(exc)}")
-                raise HTTPException(
-                    status_code=503, detail=f"Service at {self.base_url} is unavailable"
-                )
+            return response
 
 
 class FlightClient(BaseClient):
@@ -64,29 +77,28 @@ class TicketClient(BaseClient):
                 "flightNumber": flight_number,
                 "price": price,
                 "uuid": ticket_uuid,
-                "username": username
+                "username": username,
             },
         )
 
     async def delete_ticket(self, username: str, ticket_uid: str):
-        return await self._request(
-            "DELETE", f"/tickets/{ticket_uid}"
-        )
+        return await self._request("DELETE", f"/tickets/{ticket_uid}")
 
     async def get_ticket_by_uid(self, username: str, ticket_uid: str):
         return await self._request(
-            "GET", f"/tickets/{ticket_uid}",
-            params={"username": username}
+            "GET", f"/tickets/{ticket_uid}", params={"username": username}
         )
 
 
 class BonusClient(BaseClient):
     async def get_privilege(self, username: str):
         return await self._request(
-            "GET", "/privilege", params={"username": username},
+            "GET",
+            "/privilege",
+            params={"username": username},
         )
 
-    async def   calculate(
+    async def calculate(
         self, username: str, ticket_uuid: str, price, paid_from_balance
     ):
         return await self._request(

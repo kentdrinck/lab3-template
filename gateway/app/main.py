@@ -18,9 +18,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-flight_client = FlightClient(os.getenv("FLIGHT_SERVICE_HOST"))
-ticket_client = TicketClient(os.getenv("TICKET_SERVICE_HOST"))
-bonus_client = BonusClient(os.getenv("BONUS_SERVICE_HOST"))
+flight_client = FlightClient(os.getenv("FLIGHT_SERVICE_HOST"), "flight")
+ticket_client = TicketClient(os.getenv("TICKET_SERVICE_HOST"), "ticket")
+bonus_client = BonusClient(os.getenv("BONUS_SERVICE_HOST"), "bonus")
 
 
 @app.get("/manage/health")
