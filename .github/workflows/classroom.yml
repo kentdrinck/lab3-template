@@ -44,9 +44,9 @@ jobs:
           SERVICE_NAME: bonus_service
           PORT_NUMBER: 8050
 
-      # - uses: education/autograding@v1
-      #   id: autograder
-      #   continue-on-error: true
+      - uses: education/autograding@v1
+        id: autograder
+        continue-on-error: true
 
       # - name: Github auto grader mark
       #   uses: Romanow/google-sheet-autograder-marker@v1.0
